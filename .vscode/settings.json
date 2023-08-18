@@ -7,6 +7,7 @@
         ".venv/**/*.py"
     ],
     "python.testing.pytestEnabled": true,
+    "python.defaultInterpreterPath": ".venv/bin/python3",
     "python.envFile": "${workspaceFolder}/.env",
     "[python]": {
         "editor.formatOnSave": true,
