@@ -9,22 +9,29 @@ import requests
 from git import InvalidGitRepositoryError, Repo
 
 sonar_url = "http://localhost:9000/sonarqube"
-sonar_analysis_token = "sqa_986a47d4af1ab9767f6f656b8ac90f41ca580f89"
-sonar_api_token = "Yc8rMcvzhcUtNri"
-# sonar_analysis_token = os.environ.get("SONAR_ANALYSIS_TOKEN")
-# actually the password, for some reason cannot create api token
-# sonar_api_token = os.environ.get("SONAR_API_TOKEN")
 
 
-def sonar_options() -> str:
-    return f"-Dsonar.host.url={sonar_url} -Dsonar.token={sonar_analysis_token}"
+def sonar_options(repo_path: str, key: str) -> str:
+    sonar_analysis_token = os.environ.get("SONAR_ANALYSIS_TOKEN")
+
+    rel_path = repo_path.split("securitybankph")[-1]
+    git_url = f"http://sonar.vino9.net/git/{rel_path}"
+
+    opts = f" -Dsonar.host.url={sonar_url}"
+    opts += f" -Dsonar.links.homepage={git_url}"
+    opts += f" -Dsonar.links.scm={git_url}"
+    opts += f" -Dsonar.token={sonar_analysis_token} "
+    opts += f" -Dsonar.projectKey={key} "
+
+    return opts
 
 
 def ensure_sonar_project_tags(project_key: str, tags: dict[str, str]):
+    sonar_api_token = os.environ.get("SONAR_API_TOKEN")
     new_tags = [f"{key}#{value}" for key, value in sorted(tags.items())]
     response = requests.post(
         f"{sonar_url}/api/project_tags/set",
-        auth=("admin", sonar_api_token),
+        auth=(sonar_api_token, ""),
         data={
             "project": project_key,
             "tags": ",".join(new_tags),
@@ -38,7 +45,7 @@ def ensure_sonar_project_tags(project_key: str, tags: dict[str, str]):
     return False
 
 
-def run(command: str, dry_run: bool) -> int:
+def run(command: str, dry_run: bool = False) -> int:
     cwd = os.getcwd()
     print(f"pwd={cwd}\n{command}")
 

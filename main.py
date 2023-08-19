@@ -16,28 +16,17 @@ from utils import (
 
 load_dotenv()
 
-DRY_RUN = False
 build_cmd = "mvn --batch-mode clean install"
-sonar_cmd = f"mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar {sonar_options()} -Dsonar.projectKey="
+sonar_cmd = "mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar "
 
 
-def build_and_scan(repo_path: str, tags):
-    # print(f"build_and_scan: tags = {tags}")
-    project_key = f"{tags['layer']}-{tags['repo']}"
-
-    if tags["layer"] != "bff":
-        return
-
-    if is_maven_project(repo_path):
-        try:
-            pwd = os.getcwd()
-            os.chdir(repo_path)
-            print(f"sonar_cmd = {sonar_cmd + project_key}")
-            if run(build_cmd, DRY_RUN) and run(sonar_cmd + project_key, DRY_RUN):
-                ensure_sonar_project_tags(project_key, tags)
-                print(f"==== Successfully scanned {repo_path} ====")
-        finally:
-            os.chdir(pwd)
+def mvn_build_and_scan(repo_path: str, sonar_opts: str):
+    try:
+        pwd = os.getcwd()
+        os.chdir(repo_path)
+        return run(build_cmd) and run(sonar_cmd + sonar_opts)
+    finally:
+        os.chdir(pwd)
 
 
 def process_repo(repo_path: str):
@@ -54,8 +43,23 @@ def process_repo(repo_path: str):
         elif "master" in cloned_repo.branches:
             cloned_repo.heads.master.checkout()
 
+        if not is_maven_project(cloned_repo.working_dir):
+            return
+
         tags = tags_from_repo_path(repo_path)
-        build_and_scan(tmp_dir, tags)
+        project_key = f"{tags['layer']}-{tags['repo']}"
+
+        if tags["layer"] not in ["cs", "bff", "cds"]:
+            return
+
+        # uncomment to test with 1 repo only
+        # if tags["repo"] != "limit-service":
+        #     return
+
+        sonar_opts = sonar_options(repo_path, project_key)
+        print(f"sonar_opts={sonar_opts}")
+        mvn_build_and_scan(tmp_dir, sonar_opts)
+        ensure_sonar_project_tags(project_key, tags)
 
 
 def main(base_path: str):
@@ -69,7 +73,7 @@ def main(base_path: str):
 
 
 if __name__ == "__main__":
-    base_path = "~/sbc/gitlab/securitybankph"
+    base_path = "/home/git/securitybankph"
     if len(sys.argv) > 1:
         base_path = sys.argv[1]
 
