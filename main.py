@@ -17,14 +17,44 @@ from utils import (
 load_dotenv()
 
 build_cmd = "mvn --batch-mode clean install"
-sonar_cmd = "mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar "
+sonar_cmd = "mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar "
+jqa_cmd = "mvn com.buschmais.jqassistant:jqassistant-maven-plugin:2.0.6:scan"
+
+jqa_config = """
+jqassistant:
+  skip: false
+
+  plugins:
+    - group-id: org.jqassistant.plugin
+      artifact-id: jqassistant-spring-plugin
+      version: 2.0.0
+      type: jar
+
+  store:
+    uri: bolt://localhost
+    remote:
+      username: neo4j
+      password: password
+
+
+  scan:
+    reset: false
+    continue-on-error: true
+
+"""
+
+
+def write_jqa_config(repo_path: str):
+    with open(f"{repo_path}/.jqassistant.yml", "w") as f:
+        f.write(jqa_config)
 
 
 def mvn_build_and_scan(repo_path: str, sonar_opts: str):
     try:
         pwd = os.getcwd()
         os.chdir(repo_path)
-        return run(build_cmd) and run(sonar_cmd + sonar_opts)
+        write_jqa_config(repo_path)
+        return run(build_cmd) and run(sonar_cmd + sonar_opts) and run(jqa_cmd)
     finally:
         os.chdir(pwd)
 
@@ -77,4 +107,5 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         base_path = sys.argv[1]
 
+    # print(os.environ)
     main(base_path)
