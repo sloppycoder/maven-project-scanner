@@ -16,10 +16,6 @@ from utils import (
 
 load_dotenv()
 
-build_cmd = "mvn --batch-mode clean install"
-sonar_cmd = "mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar "
-jqa_cmd = "mvn com.buschmais.jqassistant:jqassistant-maven-plugin:2.0.6:scan"
-
 jqa_config = """
 jqassistant:
   skip: false
@@ -44,17 +40,24 @@ jqassistant:
 """
 
 
-def write_jqa_config(repo_path: str):
+def run_jqassistant(repo_path: str):
+    if os.environ.get("SKIP_JQA", "N") == "Y":
+        return True
+
     with open(f"{repo_path}/.jqassistant.yml", "w") as f:
         f.write(jqa_config)
 
+    jqa_cmd = "mvn com.buschmais.jqassistant:jqassistant-maven-plugin:2.0.6"
+    return run(f"{jqa_cmd}:scan") and run(f"{jqa_cmd}:analyze")
+
 
 def mvn_build_and_scan(repo_path: str, sonar_opts: str):
+    build_cmd = "mvn --batch-mode clean install"
+    sonar_cmd = "mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar "
     try:
         pwd = os.getcwd()
         os.chdir(repo_path)
-        write_jqa_config(repo_path)
-        return run(build_cmd) and run(sonar_cmd + sonar_opts) and run(jqa_cmd)
+        return run(build_cmd) and run(sonar_cmd + sonar_opts) and run_jqassistant(repo_path)
     finally:
         os.chdir(pwd)
 
