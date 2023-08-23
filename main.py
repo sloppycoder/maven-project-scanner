@@ -27,15 +27,21 @@ jqassistant:
       type: jar
 
   store:
-    uri: bolt://localhost
+    uri: neo4j://localhost
     remote:
       username: neo4j
       password: password
 
-
   scan:
     reset: false
     continue-on-error: true
+
+  analyze:
+    groups:
+    - spring-boot:Strict
+    rule:
+      default-concept-severity: MINOR
+      default-constraint-severity: MINOR
 
 """
 

@@ -1,41 +1,13 @@
+# Maven scanner
 
-# Welcome to your Python project
+Identify Maven projects from local mirrors and build each project. Collect sonar stats and jqassistant scan after builing each project.
 
-This project is set up Python project with dev tooling pre-configured
+## jqassistnt
 
-* black
-* flake8
-* isort
-* mypy
-* VS Code support
-
-## Setup
-
-The easiest way to get started is probably use [Jetpack.io devbox](https://www.jetpack.io/devbox). Install devbox first, then
+To check if there Spring related results are collected (during analyze phase), run the following command
+the current version (2.0.0) of spring plugin does not work well with neo4j 5.x. No errors are shown but no Spring objects are identified during the analysis run. Use neo4j 4.x instead.
 
 ```shell
-devbox shell
-
-# you should ready to go
-
-```
-
-The more traditional way is to install python 3.10 and [poetry](https://python-poetry.org/), then
-
-```shell
-
-# create virtualenv
-poetry shell
-# install dependencies
-poetry install
-
-```
-
-## Develop the code for the stack
-
-```shell
-
-# run unit tests
-pytest
-
+cypher-shell -a localhost -u neo4j -p password \
+ "MATCH (n:Spring) RETURN labels(n) as NodeLabels, COUNT(*) as Count ORDER BY NodeLabels;"
 ```

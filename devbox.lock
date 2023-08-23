@@ -1,6 +1,18 @@
 {
   "lockfile_version": "1",
   "packages": {
+    "jdk-headless@17": {
+      "last_modified": "2023-06-30T04:44:22Z",
+      "resolved": "github:NixOS/nixpkgs/3c614fbc76fc152f3e1bc4b2263da6d90adf80fb#jdk17_headless",
+      "source": "devbox-search",
+      "version": "17.0.7+7"
+    },
+    "maven3@3.8.6": {
+      "last_modified": "2023-05-19T19:44:39Z",
+      "resolved": "github:NixOS/nixpkgs/4a22f6f0a4b4354778f786425babce9a56f6b5d8#maven3",
+      "source": "devbox-search",
+      "version": "3.8.6"
+    },
     "poetry@1.4.2": {
       "last_modified": "2023-05-25T03:54:59Z",
       "plugin_version": "0.0.1",

@@ -1,7 +1,9 @@
 {
   "packages": [
     "python@3.10",
-    "poetry@1.4.2"
+    "poetry@1.4.2",
+    "jdk-headless@17",
+    "maven3@3.8.6"
   ],
   "shell": {
     "init_hook": [
